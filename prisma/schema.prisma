@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Institution {
+  institution_id    String @id
+  name              String
+  access_token      String
+  cursor            String?
+  accounts          Account[]
+}
+
+model Account {
+  account_id        String  @id
+  institution_id    String
+  insitution        Institution @relation(fields: [institution_id], references: [institution_id])
+  name              String
+  type              String
+  iso_currency_code String?
+  mask              String?
+  available         Decimal?
+  current           Decimal?
+  limit             Decimal?
+  transactions      Transaction[]
+
+  @@index([institution_id])
+}
+
+model Transaction {
+  transaction_id      String  @id
+  account_id          String
+  account             Account @relation(fields: [account_id], references: [account_id])
+  amount              Decimal
+  iso_currency_code   String?
+  primary_category    String? 
+  detailed_category   String?
+  confidence_level    String?
+  date                String // ISO 8601 (YYYY-MM-DD)
+  datetime            DateTime?
+  authorized_date     String? // ISO 8601 (YYYY-MM-DD)
+  authorized_datetime DateTime?
+  name                String
+  merchant_name       String?
+  payment_channel     String
+  payment_processor   String?
+  address             String?
+  city                String?
+  region              String?
+  postal_code         String?
+  country             String?
+  pending             Boolean
+
+  @@index([account_id])
+}
+
+model CoinbaseTransaction {
+  transaction_id      String  @id
+  currency            String
+  amount              Decimal
+  native_currency     String
+  native_amount       Decimal // amount in USD
+  transaction_type    String
+  primary_category    String? 
+  detailed_category   String?
+  date                String // ISO 8601 (YYYY-MM-DD)
+  datetime            DateTime?
+  name                String
+}
