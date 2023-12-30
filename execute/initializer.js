@@ -1,37 +1,21 @@
 /*
     This file initializes the database with your plaid institutions.
     You must first generate access tokens for each of your institutions using the plaid quickstart frontend
-    Afterwards you can put all the access tokens in the TOKENS array inside of your .env file
+    Afterwards you can put the access tokens in the TOKENS array inside of your .env file
 */
 
+import plaidLib from '../libs/plaid.js'
+import prismaLib from '../libs/prisma.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
-import { PrismaClient } from '@prisma/client'
-
 console.log('Starting Plaid Initializer...')
-
-const PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
-const PLAID_SECRET_PROD = process.env.PLAID_SECRET_PROD;
 
 const TOKENS = JSON.parse(process.env.TOKENS)
 
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid'
-import plaidLib from '../libs/plaid.js'
-
-const configuration = new Configuration({
-    basePath: PlaidEnvironments.production,
-    baseOptions: {
-        headers: {
-            'PLAID-CLIENT-ID': PLAID_CLIENT_ID,
-            'PLAID-SECRET': PLAID_SECRET_PROD,
-            'Plaid-Version': '2020-09-14'
-        },
-    },
-});
-
-const prisma_clt = new PrismaClient()
-const plaid_clt = new PlaidApi(configuration);
+// Get Prisma and Plaid clients
+const prisma_clt = prismaLib.getClient()
+const plaid_clt = plaidLib.getClient()
 
 run()
 async function run() {

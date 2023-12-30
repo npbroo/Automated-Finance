@@ -1,3 +1,8 @@
+/*
+    Sync All Plaid Transactions to your database
+    Optionally export transactions to CSV file
+*/
+
 import plaidLib from '../libs/plaid.js'
 import prismaLib from '../libs/prisma.js'
 import coinbaseLib from '../libs/coinbase.js'
@@ -7,21 +12,36 @@ import fs from "fs"
 import dotenv from 'dotenv'
 dotenv.config()
 
-// Get clients
+// SETTINGS
+const EXPORT_CSV = true // Export transactions to CSV?
+const LOG_FILES = false // Log transactions to file?
+
+
+// Include Coinbase Support?
+const SYNC_COINBASE = (process.env.COINBASE_API_KEY && process.env.COINBASE_API_SECRET)
+
+// Get Prisma and Plaid clients
 const prisma_clt = prismaLib.getClient()
 const plaid_clt = plaidLib.getClient()
 
-// Create export path
+// Create CSV export path
 const FILENAME = 'TX_DATABASE.csv'
 const ws = fs.createWriteStream(FILENAME)
 
+
 run()
 async function run() {
+    // Sync Plaid
     await syncInstitutions()
-    await syncCoinbase()
-    await exportCSV(prisma_clt)
+    // Sync Coinbase
+    if (SYNC_COINBASE) await syncCoinbase()
+    // Export transactions
+    if (EXPORT_CSV) await exportCSV(prisma_clt)
 }
 
+/*
+    Sync a Plaid Institution
+*/
 async function syncInstitution(institution_id, access_token, last_cursor) {
     const { added, modified, removed, cursor } = await plaidLib.syncTransactions(plaid_clt, access_token, last_cursor)
 
@@ -45,13 +65,16 @@ async function syncInstitution(institution_id, access_token, last_cursor) {
     // this is where you will start the next sync from
     await prismaLib.setCursor(prisma_clt, institution_id, cursor)
 
-    //dumpJSON(added, 'added')
-    //dumpJSON(modified, 'modified')
-    //dumpJSON(removed, 'removed')
+    // log transactions to file
+    if (LOG_FILES) {
+        dumpJSON(added, 'added')
+        dumpJSON(modified, 'modified')
+        dumpJSON(removed, 'removed')
+    }
 }
 
 /*
-    sync accounts
+    Sync All Plaid Institutions
 */
 async function syncInstitutions() {
     console.log('Starting Plaid Interfacer...')
@@ -63,8 +86,12 @@ async function syncInstitutions() {
     }
 }
 
+/* 
+    Sync Coinbase Accounts
+*/ 
 async function syncCoinbase() {
     console.log('Starting Coinbase Interfacer...')
+
     // get all the accounts in the tracked accounts list
     const accounts = await coinbaseLib.getAccounts()
 
@@ -86,7 +113,7 @@ async function syncCoinbase() {
 
 
 /*
-// EXPORTING
+    Export The Transactions to a CSV for personal use
 */
 export async function exportCSV(prisma_clt) {
     const accounts = await prismaLib.getAccounts(prisma_clt)
@@ -110,6 +137,7 @@ export async function exportCSV(prisma_clt) {
         .pipe(ws)
 }
 
+// helper function returns the account name associated with the account id
 function getAcctNameByID(accounts, id) {
     for (let acct of accounts) {
         if (acct.account_id == id) {
@@ -118,6 +146,7 @@ function getAcctNameByID(accounts, id) {
     }
 }
 
+// helper function maps the Coinbase transaction format to the same format as Plaid transactions
 function mapCoinbaseToCSV(transactions) {
     const _transactions = transactions.map(tx => {
         return {
