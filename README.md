@@ -10,7 +10,7 @@ It uses [Plaid](https://plaid.com/) to connect and sync account transactions to 
 1. Sign up for a [Plaid Developer Account](https://dashboard.plaid.com/developers/keys) and apply for the Plaid Production Key.
 3. Download Plaid's [Quickstart App](https://plaid.com/docs/quickstart/) and use it to generate access tokens for each financial institution you would like to link.
 4. Set up a new database to store your transactions. (I recommend using [Planetscale](https://planetscale.com/) to spin a new one up for free)
-4. Duplicate the sample.env and rename to .env
+4. Duplicate the .sample.env file and rename it to .env
 5. Follow the instructions to fill out the .env file
 
 
@@ -36,8 +36,8 @@ Now you can sync new transactions to your database whenever you want.
 ```
 ## Optional Coinbase Support
 
-Coinbase was not supported by Plaid when I created this project. I later integrated Coinbase support for personal use and optionally included it into this project.
+Coinbase was not supported by Plaid when I created this project. I later integrated Coinbase support (USA only) for personal use and optionally included it into this project.
 
 You can generate a Coinbase API key by following the instructions [here](https://help.coinbase.com/en/cloud/api/coinbase/key-creation).
 
-Afterwards, simply add the developer key, private key, and specify the Coinbase currency codes to track in your .env file.
+Afterwards, simply add the developer key and secret in your .env file.
