@@ -1,5 +1,5 @@
 /*
-    This file contains a library for creating and sending requests to my Prisma Database
+    This file contains a library for creating and sending requests to the Prisma Database
 */
 const prismaLib = {
     getClient,
@@ -19,8 +19,8 @@ function getClient() {
     return client
 }
 
+// category taxonomy conversions from coinbase to plaid format
 function mapCoinbaseTxs(txs) {
-    // taxonomy conversions from coinbase to plaid
     const category_taxonomy_map = {
         advanced_trade_fill: ["TRANSFER_OUT", "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS"],
         interest: ["INCOME", "INCOME_INTEREST_EARNED"],
@@ -54,6 +54,7 @@ function mapCoinbaseTxs(txs) {
     return txs_map
 }
 
+// map plaid transcation object to database transaction schema
 function mapTxs(txs) {
     const txs_map = txs.map(tx => {
         return {
@@ -83,6 +84,7 @@ function mapTxs(txs) {
     // connect account on db push
 }
 
+// add transactions to database
 async function addTransactions(prisma, transactions) {
     const _transactions = await prisma.Transaction.createMany({
         data: transactions,
@@ -90,6 +92,7 @@ async function addTransactions(prisma, transactions) {
     })
 }
 
+// add coinbase transactions to database
 async function addCoinbaseTransactions(prisma, transactions) {
     const _transactions = await prisma.CoinbaseTransaction.createMany({
         data: transactions,
@@ -97,6 +100,7 @@ async function addCoinbaseTransactions(prisma, transactions) {
     })
 }
 
+// upsert plaid institutions to database
 async function upsertInstitution(prisma, institution) {
     const _institution = await prisma.Institution.upsert({
         where: { institution_id: institution.institution_id },
@@ -106,6 +110,7 @@ async function upsertInstitution(prisma, institution) {
     return _institution
 }
 
+// upsert plaid accounts to database
 async function upsertAccount(prisma, account) {
     const _account = await prisma.Account.upsert({
         where: { account_id: account.account_id },
@@ -115,12 +120,14 @@ async function upsertAccount(prisma, account) {
     return _account
 }
 
+// upsert plaid transactions to databse
 async function upsertTransactions(prisma, transactions) {
     for (let tx of transactions) {
         await upsertTransaction(prisma, tx)
     }
 }
 
+// upsert a plaid transaction to the database
 async function upsertTransaction(prisma, transaction) {
     console.log(`${transaction.date} - Added TX`)
     const _transaction = await prisma.Transaction.upsert({
@@ -131,12 +138,14 @@ async function upsertTransaction(prisma, transaction) {
     return _transaction
 }
 
+// delete transactions from the database
 async function deleteTransactions(prisma, transactions) {
     for (let tx of transactions) {
         await deleteTransaction(prisma, tx)
     }
 }
 
+// delete a transaction from the database
 async function deleteTransaction(prisma, transaction) {
     const _transaction = await prisma.Transaction.delete({
         where: { transaction_id: transaction.transaction_id },
@@ -144,21 +153,25 @@ async function deleteTransaction(prisma, transaction) {
     return _transaction
 }
 
+// get accounts from database
 async function getAccounts(prisma) {
     const _accounts = await prisma.Account.findMany()
     return _accounts
 }
 
+// get institutions from database
 async function getInstitutions(prisma) {
     const _institutions = await prisma.Institution.findMany()
     return _institutions
 }
 
+// get transactions from database
 async function getTransactions(prisma) {
     const _transactions = await prisma.Transaction.findMany()
     return _transactions
 }
 
+// get coinbase transactions from database
 async function getCoinbaseTransactions(prisma) {
     const _transactions = await prisma.CoinbaseTransaction.findMany({
         where: {
@@ -170,6 +183,7 @@ async function getCoinbaseTransactions(prisma) {
     return _transactions
 }
 
+// set the plaid sync cursor for an institution
 async function setCursor(prisma, institution_id, cursor) {
     const _institution = await prisma.Institution.update({
         where: { institution_id: institution_id },
