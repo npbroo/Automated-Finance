@@ -1,9 +1,9 @@
 
 # Automated Finance
 
-This project streamlines the synchronization of financial transactions from various bank accounts and credit cards.
+This project streamlines the synchronization of financial transactions from personal bank accounts and credit cards.
 
-It uses [Plaid](https://plaid.com/) to connect and sync account transactions to your database of choice.
+It uses [Plaid](https://plaid.com/) to connect and sync account transactions from your financial institutions to your database of choice.
 
 ## Getting Started
 
