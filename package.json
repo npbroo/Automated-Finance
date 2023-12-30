@@ -21,6 +21,6 @@
   },
   "scripts": {
     "sync": "node execute/sync.js",
-    "ini": "node execute/initializer.js",
+    "ini": "node execute/initializer.js"
   }
 }
